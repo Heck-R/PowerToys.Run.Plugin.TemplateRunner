@@ -326,6 +326,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                 Arguments = template.ExecutionInfo.Arguments.Select(
                     argument => TemplateRun.ResolveTemplateString(argument, template.Parameters, this.Parameters)
                 ).ToArray(),
+                Timeout = template.ExecutionInfo.Timeout,
             };
         }
 
@@ -400,7 +401,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
             if (template.Mode == TemplateMode.Return) {
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-                process.WaitForExit();//(executionInfo.Timeout);
+                process.WaitForExit(executionInfo.Timeout);
 
                 return new RunResult() {
                     ExitCode = process.ExitCode,
