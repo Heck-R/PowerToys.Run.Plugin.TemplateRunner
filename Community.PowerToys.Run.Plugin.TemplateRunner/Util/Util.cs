@@ -62,11 +62,13 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
         #region values
         public static TemplateMode Launch { get { return new TemplateMode("launch"); } }
         public static TemplateMode Return { get { return new TemplateMode("return"); } }
+        public static TemplateMode Uri { get { return new TemplateMode("uri"); } }
 
         /// <summary>List of "enum" values for reverse lookup</summary>
         public static readonly TemplateMode[] AllModes = [
             TemplateMode.Launch,
             TemplateMode.Return,
+            TemplateMode.Uri,
         ];
         #endregion
 
@@ -182,14 +184,24 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
             }
             this.Parameters = aliasInterfaceSegments.Length > parametersStartIndex ? aliasInterfaceSegments[parametersStartIndex..] : [];
 
-            var commandInterfaceSegments = commandInterface.Split(this.Separator);
-            // The empty string is not a valid path
-            this.ExecutionInfo = new() {
-                WorkingDirectory = commandInterfaceSegments.Length > 0 && commandInterfaceSegments[0] != "" ? commandInterfaceSegments[0] : null,
-                Executable = commandInterfaceSegments.Length > 1 && commandInterfaceSegments[1] != "" ? commandInterfaceSegments[1] : null,
-                Arguments = commandInterfaceSegments.Length > 2 ? commandInterfaceSegments[2..] : [],
-                Timeout = timeout,
-            };
+            // Note: The empty string is not a valid path
+            if (this.Mode == TemplateMode.Uri) {
+                // URIs have no working directory, and their parameters are included in themselves
+                this.ExecutionInfo = new() {
+                    WorkingDirectory = null,
+                    Executable = commandInterface != "" ? commandInterface : null,
+                    Arguments = [],
+                    Timeout = timeout,
+                };
+            } else { // Normal process stuff
+                var commandInterfaceSegments = commandInterface.Split(this.Separator);
+                this.ExecutionInfo = new() {
+                    WorkingDirectory = commandInterfaceSegments.Length > 0 && commandInterfaceSegments[0] != "" ? commandInterfaceSegments[0] : null,
+                    Executable = commandInterfaceSegments.Length > 1 && commandInterfaceSegments[1] != "" ? commandInterfaceSegments[1] : null,
+                    Arguments = commandInterfaceSegments.Length > 2 ? commandInterfaceSegments[2..] : [],
+                    Timeout = timeout,
+                };
+            }
         }
 
         /// <summary>
@@ -200,7 +212,9 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
             return this.Alias != null &&
                    this.Mode != null &&
                    this.ExecutionInfo.Timeout >= -1 &&
-                   this.ExecutionInfo.Executable != null;
+                   this.ExecutionInfo.Executable != null &&
+                   // It's not a valid URI without a ':'
+                   (this.Mode != TemplateMode.Uri || this.ExecutionInfo.Executable.Contains(':'));
         }
 
         /// <summary>
@@ -211,22 +225,38 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
             return string.Join("\n",
                 new string[]{
                     $"Template: '{this.Definition}'",
-                    "Separator: " + (this.Separator == null ? "undefined" : $"'{this.Separator}'") + " (first non-regex-word character)",
-                    $"Mode: " + (this.Mode == null ? "undefined" : $"'{this.Mode}'") + $"({string.Join("|", TemplateMode.AllModes.Select(mode => mode.ToString()))})",
+                    "Separator: " +
+                        (this.Separator == null ? "undefined" : $"'{this.Separator}'") +
+                        " (first non-regex-word character)",
+                    $"Mode: " +
+                        (this.Mode == null ? "undefined" : $"'{this.Mode}'") +
+                        $" ({string.Join("|", TemplateMode.AllModes.Select(mode => mode.ToString()))})",
                 }
-                .Concat(this.Mode != TemplateMode.Return ? []
-                    : ["Timeout: " + (this.ExecutionInfo.Timeout >= -1 ? this.ExecutionInfo.Timeout.ToString() : "Bad number, must be >= -1") + " (ms, -1 ~ wait indefinitely)"]
+                .Concat(this.Mode != TemplateMode.Return ? [] : [
+                    "Timeout: " + (
+                        this.ExecutionInfo.Timeout >= -1
+                            ? this.ExecutionInfo.Timeout.ToString()
+                            : "Bad number, must be >= -1"
+                    ) + " (ms, -1 ~ wait indefinitely)"]
                 )
                 .Concat([
                     "",
                     $"Alias: " +(this.Alias == null ? "undefined" : $"'{this.Alias}'"),
                 ])
                 .Concat(this.Parameters.Select((templateParameter) => $"Parameter: '{templateParameter}'"))
+                .Concat(this.Mode == TemplateMode.Uri ? [] : [
+                    $"Working Directory: " + (
+                        string.IsNullOrEmpty(this.ExecutionInfo.WorkingDirectory)
+                            ? "PowerToys working directory"
+                            : $"'{this.ExecutionInfo.WorkingDirectory}'"
+                    ),
+                ])
                 .Concat([
-                    $"Working Directory: " + (string.IsNullOrEmpty(this.ExecutionInfo.WorkingDirectory)
-                                                ? "PowerToys working directory"
-                                                : $"'{this.ExecutionInfo.WorkingDirectory}'"),
-                    $"Executable: " + (this.ExecutionInfo.Executable == null ? "undefined" : $"'{this.ExecutionInfo.Executable}'"),
+                    $"Executable: " +
+                        (this.ExecutionInfo.Executable == null ? "undefined" : $"'{this.ExecutionInfo.Executable}'") +
+                        (this.Mode == TemplateMode.Uri && this.ExecutionInfo.Executable != null && !this.ExecutionInfo.Executable.Contains(':')
+                            ? " (ISSUE: URIs must contain a ':')"
+                            : ""),
                 ])
                 .Concat(this.ExecutionInfo.Arguments.Select((argument) => $"Executable Argument: '{argument}'"))
             );
@@ -319,14 +349,17 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
         /// <param name="template"></param>
         /// <returns></returns>
         public ExecutionInfo ResolveTemplate(Template template) {
+            // For URIs, the template parameter values are URI encoded
+            var runParameters = template.Mode == TemplateMode.Uri ? this.Parameters.Select(Uri.EscapeDataString).ToArray() : this.Parameters;
+
             return new ExecutionInfo() {
                 WorkingDirectory = string.IsNullOrEmpty(template.ExecutionInfo.WorkingDirectory)
                     ? Directory.GetCurrentDirectory()
-                    : TemplateRun.ResolveTemplateString(template.ExecutionInfo.WorkingDirectory, template.Parameters, this.Parameters),
-                Executable = TemplateRun.ResolveTemplateString(template.ExecutionInfo.Executable, template.Parameters, this.Parameters),
-                Arguments = template.ExecutionInfo.Arguments.Select(
-                    argument => TemplateRun.ResolveTemplateString(argument, template.Parameters, this.Parameters)
-                ).ToArray(),
+                    : TemplateRun.ResolveTemplateString(template.ExecutionInfo.WorkingDirectory, template.Parameters, runParameters),
+                Executable = TemplateRun.ResolveTemplateString(template.ExecutionInfo.Executable, template.Parameters, runParameters),
+                Arguments = template.ExecutionInfo.Arguments
+                    .Select(argument => TemplateRun.ResolveTemplateString(argument, template.Parameters, runParameters))
+                    .ToArray(),
                 Timeout = template.ExecutionInfo.Timeout,
             };
         }
@@ -379,14 +412,27 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
 
             Process process = new();
             process.StartInfo.FileName = executionInfo.Executable;
-            foreach (var argument in executionInfo.Arguments) {
-                process.StartInfo.ArgumentList.Add(argument);
+
+            if (template.Mode == TemplateMode.Uri) {
+                // Shell is needed for URIs to be recognized as executables
+                process.StartInfo.UseShellExecute = true;
+
+                // URIs don't have a working directory, and have their parameters in themselves
+            } else {
+                // Generally better to avoid shell if not necessary, required for capturing output and it also helps in keeping arguments separate
+                process.StartInfo.UseShellExecute = false;
+
+                process.StartInfo.WorkingDirectory = executionInfo.WorkingDirectory;
+                foreach (var argument in executionInfo.Arguments) {
+                    process.StartInfo.ArgumentList.Add(argument);
+                }
             }
-            process.StartInfo.WorkingDirectory = executionInfo.WorkingDirectory;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
 
             if (template.Mode == TemplateMode.Return) {
+                // The appearing process window de-focuses PowerToys Run, and dismisses it
+                // Hiding it is a smoother experience anyway
+                process.StartInfo.CreateNoWindow = true;
+
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
 
@@ -396,9 +442,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
             }
 
             process.Start();
-            if (template.Mode == TemplateMode.Launch) {
-                return null;
-            }
+
             if (template.Mode == TemplateMode.Return) {
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
@@ -409,14 +453,10 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                     ExitCode = process.HasExited ? process.ExitCode : 0,
                     Output = output
                 };
-
             }
 
-            throw new Exception(string.Join("\n", [
-                $"The executed template has an unsupported execution mode ({template.Mode})",
-                $"Available modes: ({string.Join("|", TemplateMode.AllModes.ToList())})",
-                "This happening means either that the addition feature's template validation is bad, changed since the template creation or manual tampering happened to the template",
-            ]));
+            // Other modes don't return a result
+            return null;
         }
     }
 
