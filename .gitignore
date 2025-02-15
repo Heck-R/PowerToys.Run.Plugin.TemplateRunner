@@ -1,0 +1,6 @@
+# Visual Strudio
+.vs/
+
+# Build
+bin/
+obj/
