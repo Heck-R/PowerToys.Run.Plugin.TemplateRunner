@@ -302,15 +302,17 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                 if (this.LastQueryRunResult == null) {
                     return results;
                 }
+                var lastQueryRunResult = this.LastQueryRunResult;
+                this.LastQueryRunResult = null;
 
-                int exitCode = this.LastQueryRunResult.ExitCode;
-                string output = this.LastQueryRunResult.Output;
-                results.Add(
-                    new Result {
+                int exitCode = lastQueryRunResult.ExitCode;
+                string output = lastQueryRunResult.Output;
+                results.Add(lastQueryRunResult.Finished
+                    ? new Result {
                         QueryTextDisplay = PluginUtil.TrimMenuFromRawUserQuery(query, []),
-                        IcoPath = this.IconLoader.MAIN,
-                        Title = $"Process Result (Exit code: {this.LastQueryRunResult.ExitCode})",
-                        SubTitle = this.LastQueryRunResult.Output,
+                        IcoPath = lastQueryRunResult.ExitCode == 0 ? this.IconLoader.MAIN : this.IconLoader.WARNING,
+                        Title = $"Process Result (Exit code: {lastQueryRunResult.ExitCode})",
+                        SubTitle = lastQueryRunResult.Output,
                         ContextData = new ContextMenuResult[]{
                             new() {
                                 PluginName = this.Name,
@@ -324,6 +326,26 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                     return false;
                                 }
                             },
+                            new() {
+                                PluginName = this.Name,
+                                Title = $"Copy Output (Ctrl+O)",
+                                Glyph = "\xE8C8", // Copy
+                                FontFamily = "Consolas, \"Courier New\", monospace",
+                                AcceleratorModifiers = ModifierKeys.Control,
+                                AcceleratorKey = Key.O,
+                                Action = actionContext => {
+                                    Clipboard.SetDataObject(output);
+                                    return false;
+                                }
+                            },
+                        },
+                    }
+                    : new Result {
+                        QueryTextDisplay = PluginUtil.TrimMenuFromRawUserQuery(query, []),
+                        IcoPath = this.IconLoader.WARNING,
+                        Title = $"The process did not finish in time => got terminated",
+                        SubTitle = lastQueryRunResult.Output,
+                        ContextData = new ContextMenuResult[]{
                             new() {
                                 PluginName = this.Name,
                                 Title = $"Copy Output (Ctrl+O)",

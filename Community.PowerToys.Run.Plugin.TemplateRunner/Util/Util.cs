@@ -39,6 +39,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
     /// Result of an executed process
     /// </summary>
     class RunResult {
+        public bool Finished { get; set; }
         public int ExitCode { get; set; }
         public string Output { get; set; }
     }
@@ -404,7 +405,8 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                 process.WaitForExit(executionInfo.Timeout);
 
                 return new RunResult() {
-                    ExitCode = process.ExitCode,
+                    Finished = process.HasExited,
+                    ExitCode = process.HasExited ? process.ExitCode : 0,
                     Output = output
                 };
 
