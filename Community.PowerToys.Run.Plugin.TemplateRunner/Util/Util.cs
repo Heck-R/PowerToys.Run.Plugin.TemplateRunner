@@ -302,11 +302,12 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
 
         /// <summary>
         /// Tells whether the template run represented is sufficiently defined for a given template
+        /// The provided template is also rechecked, to make sure nothing went sideways with it
         /// </summary>
         /// <param name="template">Reference template</param>
         /// <returns></returns>
         public bool IsWellDefined(Template template) {
-            return this.Parameters.Length == template.Parameters.Length;
+            return template.IsWellDefined() && this.Parameters.Length == template.Parameters.Length;
         }
 
         /// <summary>
@@ -327,7 +328,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                 new string[]{
                     $"Alias: '{this.Alias}'",
                     $"Run Separator: '{this.Separator}'",
-                    $"Template: '{template.Definition}'",
+                    $"Template: '{template.Definition}'" + (template.IsWellDefined() ? "" : " (ISSUE: The template is not well defined, edit to see the problem)"),
                     $"Template Mode: '{template.Mode}'",
                     "",
                 }
