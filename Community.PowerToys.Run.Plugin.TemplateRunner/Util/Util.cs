@@ -20,7 +20,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
 
         /// <summary>
         /// The latest item is the first
-        /// The history has no repetition, as re-picking would cause a spamming of the history
+        /// The history has no repetition, as re-running would cause a spamming of the history
         /// => the older occurrence of the item is removed, and only the latest is kept
         /// </summary>
         public LinkedList<string> History { get; set; } = [];
