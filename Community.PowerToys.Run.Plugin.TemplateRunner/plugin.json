@@ -1,7 +1,7 @@
 {
   "ID": "2CFA7264031F465E953DC55207706256",
   "ActionKeyword": "trn",
-  "IsGlobal": false,
+  "IsGlobal": true,
   "Name": "TemplateRunner",
   "Author": "Heck-R",
   "Version": "1.0.0",
