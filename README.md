@@ -56,12 +56,13 @@ The above format uses the following blocks to be replaced:
 - `<mode>`: The mode describes how the template will be executed.  \
     It must be one of the following:
   - `launch`: The described process is started, and PowerToys run closes immediately  \
-    - From the optional segments, `<workingDir>` is parsed
+    From the optional segments, `<workingDir>` is parsed
   - `return`: The described process is started, and awaited for. The result then appears as a new result  \
     Note that PowerToys Run will not respond while the process is working  \
-    - From the optional segments, `<workingDir>` and `<timeoutMs>` are parsed
-  - `uri`: Similar to launch, but it launches an uri / protocol (e.g.: `https://<website>`, `mailto:<mail_address>` etc.)
-    - From the optional segments, nothing is parsed, so after the double separator, only `<executable>` can and must be passed
+    From the optional segments, `<workingDir>` and `<timeoutMs>` are parsed
+  - `uri`: Similar to launch, but it launches an uri / protocol (e.g.: `https://<website>`, `mailto:<mail_address>` etc.)  \
+    From the optional segments nothing is parsed, so after the double separator, only `<executable>` can and must be passed  \
+    In this mode, the template parameters are going to be URL encoded before being applied when running. While this indeed means that not everything can be inserted into the URI (like an entire key-value pair, as the `=` is going to be escaped), this makes the most sensible scenarios a lot more convenient and straightforward, which is the entire point of this mode, and more complicated URIs can still be handled and opened using the `launch` mode (e.g.: `trn add raw_uri|launch|<param>|||cmd|start|https://somerandomnonexistentsite.com?<raw_param>`)
 - `<timeoutMs>`: It describes the amount of milliseconds (`>= 0` whole number) to wait for the process to finish on its own, to avoid PowerToysRun being permanently stuck  \
   `-1` means infinite waiting time
 - `<parameter>`: A string to be replaced on the right side of the double separators, basically the values that describe the command to be executed  \
