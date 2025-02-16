@@ -312,7 +312,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                 PluginName = this.Name,
                                 Title = $"Copy Return Code (Ctrl+R)",
                                 Glyph = "\xE8C8", // Copy
-                                FontFamily = "Consolas, \"Courier New\", monospace",
+                                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                                 AcceleratorModifiers = ModifierKeys.Control,
                                 AcceleratorKey = Key.R,
                                 Action = actionContext => {
@@ -324,7 +324,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                 PluginName = this.Name,
                                 Title = $"Copy Output (Ctrl+O)",
                                 Glyph = "\xE8C8", // Copy
-                                FontFamily = "Consolas, \"Courier New\", monospace",
+                                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                                 AcceleratorModifiers = ModifierKeys.Control,
                                 AcceleratorKey = Key.O,
                                 Action = actionContext => {
@@ -344,7 +344,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                 PluginName = this.Name,
                                 Title = $"Copy Output (Ctrl+O)",
                                 Glyph = "\xE8C8", // Copy
-                                FontFamily = "Consolas, \"Courier New\", monospace",
+                                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                                 AcceleratorModifiers = ModifierKeys.Control,
                                 AcceleratorKey = Key.O,
                                 Action = actionContext => {
