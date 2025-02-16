@@ -157,8 +157,6 @@ Show the history of the runs (only those that were actually executed, and each o
 
 Selecting a history item will redirect to the run menu, with the run already inserted
 
-# Examples
-
 # Credits
 
 - Project template: https://github.com/hlaueriksson/Community.PowerToys.Run.Plugin.Templates
