@@ -153,7 +153,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
         /// </summary>
         /// <param name="templateDefinition">
         /// Format (sep ~ separator):
-        /// <alias><sep><mode><sep>[<timeoutMs><sep>][<parameter><sep>[...]]<sep><sep><workingDir><sep><executable><sep>[<argument><sep>[...]]
+        /// <alias><sep><mode>[<sep><timeoutMs>][<sep><parameter>[...]]<sep><sep>[<workingDir><sep>]<executable>[<sep><argument>[...]]
         /// The timeout is mandatory for return mode, and not definable otherwise
         /// </param>
         public Template(string templateDefinition) {
@@ -289,7 +289,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
         /// </summary>
         /// <param name="templateRunDefinition">
         /// Format (sep ~ separator):
-        /// <alias><sep>[<argument><sep>[...]]
+        /// <alias>[<sep><argument>[...]]
         /// </param>
         public TemplateRun(string templateRunDefinition) {
             var separatorMatch = Regex.Match(templateRunDefinition, @"[^\w]");
