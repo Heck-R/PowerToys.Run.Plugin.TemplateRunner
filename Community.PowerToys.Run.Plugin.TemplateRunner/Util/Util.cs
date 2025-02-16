@@ -213,6 +213,8 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                    this.Mode != null &&
                    this.ExecutionInfo.Timeout >= -1 &&
                    this.ExecutionInfo.Executable != null &&
+                   // Uri must have exactly one segment
+                   (this.Mode != TemplateMode.Uri || !this.ExecutionInfo.Executable.Contains(this.Separator)) &&
                    // It's not a valid URI without a ':'
                    (this.Mode != TemplateMode.Uri || this.ExecutionInfo.Executable.Contains(':'));
         }
@@ -253,10 +255,21 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                 ])
                 .Concat([
                     $"Executable: " +
-                        (this.ExecutionInfo.Executable == null ? "undefined" : $"'{this.ExecutionInfo.Executable}'") +
-                        (this.Mode == TemplateMode.Uri && this.ExecutionInfo.Executable != null && !this.ExecutionInfo.Executable.Contains(':')
+                        (
+                            this.ExecutionInfo.Executable == null
+                                ? "undefined"
+                                : $"'{this.ExecutionInfo.Executable}'"
+                        ) +
+                        (
+                            this.Mode == TemplateMode.Uri && this.ExecutionInfo.Executable != null && !this.ExecutionInfo.Executable.Contains(':')
                             ? " (ISSUE: URIs must contain a ':')"
-                            : ""),
+                            : ""
+                        ) +
+                        (
+                            (this.Mode == TemplateMode.Uri && this.ExecutionInfo.Executable != null && this.ExecutionInfo.Executable.Contains(this.Separator))
+                            ? " (ISSUE: URI definitions must only have one segment, but a separator is present)"
+                            : ""
+                        ),
                 ])
                 .Concat(this.ExecutionInfo.Arguments.Select((argument) => $"Executable Argument: '{argument}'"))
             );
