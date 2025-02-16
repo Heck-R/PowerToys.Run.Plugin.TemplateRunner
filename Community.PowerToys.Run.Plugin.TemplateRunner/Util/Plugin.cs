@@ -52,8 +52,9 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                     // Call original action
                     originalAction?.Invoke(actionContext);
 
-                    basicQueryPath = basicQueryPath[0] == ' ' ? basicQueryPath : $" {basicQueryPath}";
-                    context.API.ChangeQuery($"{query.ActionKeyword}{basicQueryPath}{postfix}", true);
+                    // Prepend actively entered action keyword, and trim joiner space if the prior was whitespace
+                    string fullQueryPath = string.Join(" ", [query.ActionKeyword, basicQueryPath]).TrimStart();
+                    context.API.ChangeQuery($"{fullQueryPath}{postfix}", true);
                     return false;
                 };
 
