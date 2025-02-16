@@ -141,6 +141,10 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
         /// <returns></returns>
         public List<Result> Query(Query query) {
             try {
+                if (string.IsNullOrWhiteSpace(query.ActionKeyword)) {
+                    return this.Run(query);
+                }
+
                 if (query.Terms.ElementAtOrDefault(0) == Menu.RUN) {
                     return this.Run(query);
                 }
@@ -153,7 +157,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                     return this.History(query);
                 }
 
-                var navigationMenus = PluginUtil.NavigationMenu(this.Context, query, [], [
+                return PluginUtil.NavigationMenu(this.Context, query, [], [
                     new Result {
                         QueryTextDisplay = Menu.RUN,
                         IcoPath = this.IconLoader.MAIN,
@@ -173,16 +177,6 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         SubTitle = "See the history of template runs",
                     },
                 ]);
-
-                return navigationMenus.Count > 0 ? navigationMenus : [
-                    new Result {
-                        QueryTextDisplay = "",
-                        IcoPath = this.IconLoader.WARNING,
-                        Title = "No result",
-                        SubTitle = "",
-                        Action = actionContext => false,
-                    }
-                ];
             } catch (Exception ex) {
                 return [
                     new Result {
@@ -222,7 +216,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         this.Storage.TemplateDefinitions.Add(menuRawUserQuery);
                         this.Save();
 
-                        this.Context.API.ChangeQuery($"{query.ActionKeyword} {Menu.RUN} {template.Alias}", true);
+                        this.Context.API.ChangeQuery($"{this.Context.CurrentPluginMetadata.ActionKeyword} {Menu.RUN} {template.Alias}", true);
                         return false;
                     },
                 },
@@ -281,8 +275,8 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                             return false;
                         },
                         ContextData = new ContextMenuResult[]{
-                            getEditTemplateContextMenuResult(query.ActionKeyword, template.Alias),
-                            getDeleteTemplateContextMenuResult(query.ActionKeyword, template.Alias),
+                            getEditTemplateContextMenuResult(template.Alias),
+                            getDeleteTemplateContextMenuResult(template.Alias),
                         },
                     }
                 ]
@@ -293,8 +287,8 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         Title = $"The run definition is incorrect",
                         SubTitle = templateRun.TemplateMatchInfo(template),
                         ContextData = new ContextMenuResult[]{
-                            getEditTemplateContextMenuResult(query.ActionKeyword, template.Alias),
-                            getDeleteTemplateContextMenuResult(query.ActionKeyword, template.Alias),
+                            getEditTemplateContextMenuResult(template.Alias),
+                            getDeleteTemplateContextMenuResult(template.Alias),
                         },
                     }
                 ];
@@ -366,30 +360,23 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
             }
 
             // No specific alias was found => provide a filtered list
-            var navigationMenus = PluginUtil.NavigationMenu(this.Context, query, [Menu.RUN], this.Storage.TemplateDefinitions.Select(templateDefinition => {
-                Template template = new(templateDefinition);
-                return new Result {
-                    QueryTextDisplay = template.Alias,
-                    IcoPath = this.IconLoader.MAIN,
-                    Title = template.Alias,
-                    SubTitle = templateDefinition,
-                    ContextData = new ContextMenuResult[]{
-                        getEditTemplateContextMenuResult(query.ActionKeyword, template.Alias),
-                        getDeleteTemplateContextMenuResult(query.ActionKeyword, template.Alias),
-                    },
-                };
-            }).ToList(), "");
-
-            return navigationMenus.Count > 0 ? navigationMenus : [
-                new Result {
-                    QueryTextDisplay = "",
-                    IcoPath = this.IconLoader.WARNING,
-                    Title = "There are no aliases containing the search term",
-                    SubTitle = "",
-                    Action = actionContext => false,
+            return PluginUtil.NavigationMenu(this.Context, query,
+                // This menu is expected to be available in the global context, where the run menu is not explicitly present
+                string.IsNullOrWhiteSpace(query.ActionKeyword) ? [] : [Menu.RUN],
+                this.Storage.TemplateDefinitions.Select(templateDefinition => {
+                    Template template = new(templateDefinition);
+                    return new Result {
+                        QueryTextDisplay = template.Alias,
+                        IcoPath = this.IconLoader.MAIN,
+                        Title = template.Alias,
+                        SubTitle = templateDefinition,
+                        ContextData = new ContextMenuResult[]{
+                            getEditTemplateContextMenuResult(template.Alias),
+                            getDeleteTemplateContextMenuResult(template.Alias),
+                        },
+                    };
                 }
-            ];
-
+            ).ToList(), "");
         }
 
         /// <summary>
@@ -408,18 +395,12 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                     IcoPath = this.IconLoader.MAIN,
                     Title = $"{index++}: {templateRunDefinition}",
                     Action = actionContext => {
-                        this.Context.API.ChangeQuery($"{query.ActionKeyword} {Menu.RUN} {templateRunDefinition}", true);
+                        this.Context.API.ChangeQuery($"{this.Context.CurrentPluginMetadata.ActionKeyword} {Menu.RUN} {templateRunDefinition}", true);
                         return false;
                     },
                 }).ToList();
 
-            return historyResults.Count > 0 ? PluginUtil.FixPositionAsScore(historyResults).ToList() : [
-                new Result {
-                    QueryTextDisplay = query.Search,
-                    IcoPath = this.IconLoader.WARNING,
-                    Title = "No history result",
-                }
-            ];
+            return PluginUtil.FixPositionAsScore(historyResults).ToList();
         }
 
 
@@ -451,7 +432,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        private ContextMenuResult getEditTemplateContextMenuResult(string actionKeyword, string templateAlias) {
+        private ContextMenuResult getEditTemplateContextMenuResult(string templateAlias) {
             // Find must always find the definition, because the edit context is only supposed to be added to items related to existing templates
             string templateDefinition = this.Storage.TemplateDefinitions.Find((templateDefinition) => new Template(templateDefinition).Alias == templateAlias);
             return new ContextMenuResult {
@@ -462,7 +443,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                 AcceleratorModifiers = ModifierKeys.Control,
                 AcceleratorKey = Key.E,
                 Action = actionContext => {
-                    this.Context.API.ChangeQuery($"{actionKeyword} {Menu.ADD} {templateDefinition}", true);
+                    this.Context.API.ChangeQuery($"{this.Context.CurrentPluginMetadata.ActionKeyword} {Menu.ADD} {templateDefinition}", true);
                     return false;
                 }
             };
@@ -473,7 +454,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        private ContextMenuResult getDeleteTemplateContextMenuResult(string actionKeyword, string templateAlias) {
+        private ContextMenuResult getDeleteTemplateContextMenuResult(string templateAlias) {
             return new ContextMenuResult {
                 PluginName = this.Name,
                 Title = "Delete Template (Ctrl+D)",
@@ -483,7 +464,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                 AcceleratorKey = Key.D,
                 Action = actionContext => {
                     this.Storage.TemplateDefinitions.RemoveAll((templateDefinition) => new Template(templateDefinition).Alias == templateAlias);
-                    this.Context.API.ChangeQuery($"{actionKeyword} {Menu.RUN}", true);
+                    this.Context.API.ChangeQuery($"{this.Context.CurrentPluginMetadata.ActionKeyword} {Menu.RUN}", true);
                     return false;
                 }
             };
