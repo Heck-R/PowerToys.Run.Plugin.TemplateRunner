@@ -160,7 +160,7 @@ Selecting a history item will redirect to the run menu, with the run already ins
 # Credits
 
 - Project template: https://github.com/hlaueriksson/Community.PowerToys.Run.Plugin.Templates
-- Dice icon: <a href="https://www.freepik.com/icon/puzzle_6202531">Icon by Freepik</a>
+- Puzzle icon: <a href="https://www.freepik.com/icon/puzzle_6202531">Icon by Freepik</a>
 
 # Donate
 
