@@ -158,6 +158,69 @@ Show the history of the runs (only those that were actually executed, and each o
 
 Selecting a history item will redirect to the run menu, with the run already inserted
 
+# Examples
+
+## Shortcut-like
+
+The simplest use of the plugin is a "shortcut quick access"-like experience, which is basically calling some program with a fixed list of arguments that would otherwise take a shortcut, and be less reachable, or fill the desktop
+
+- Launch chrome without extensions  \
+  `pure_chrome|launch|||chrome|--disable-extensions`
+  - Now many may try this and fail, and the success really depends whether chrome is on your `PATH` or not  \
+    A full path could also be used, but some may have the 32 bit, and some the 64 bit version installed on different paths, so the most commonly working version would be using CMD's `start` command to our advantage  \
+  `pure_chrome|launch|||cmd|/c|start chrome --disable-extensions`
+    
+
+## Minimal parameterization
+
+The most commonly expected use-case is when there is a minimal parameterization, and it's really where the plugin shines.  \
+Some examples are going to be grouped, when they are mildly different iterations of each other
+
+- When there is something that's indexed, and thus it always takes multiple clicks to get to where you want
+  - Open a network folder on an indexed machine  \
+    `netpath|launch|<index>|||explorer|\\MyFancyHost<index>\and\some\path`
+  - Start RDP on an indexed machine  \
+    `rdp|launch|<index>|||mstsc|/v:MyFancyHost<index>`
+- Quick web search with URL insertions
+  - The most mainstream is [google](https://www.google.com)
+    `google|uri|<search>||https://google.com/search?q=<search>`
+  - Way less people know however that google images (and other categories) can also be searched  \
+    `gimg|uri|<search>||https://google.com/search?udm=2&q=<search>`
+  - Although most people get to [Wikipedia](https://wikipedia.org) from search engines, it has a nice search engine of its own, bringing you straight to the target page when there is one with the exact search term
+    `wiki|uri|<search>||https://wikipedia.org/wiki/Special:Search?search=<search>`
+  - There are other wikis as well, like [Fandom](https://www.fandom.com/)
+    `fandom|uri|<search>||https://community.fandom.com/wiki/Special:Search?scope=cross-wiki&query=<search>`
+  - Media databases like [IMDB](https://www.imdb.com)
+    `imdb|uri|<search>||https://www.imdb.com/find/?q=<search>`
+  - [MAL](https://myanimelist.net/)
+    `mal|uri|<search>||https://myanimelist.net/search/all?cat=all&q=<search>`
+  - And there is also a great possibility here for those who wish to find what certain "six digits" hide, but I leave that template up to those interested
+
+## Miniature plugin scripts
+
+Those with adventurous souls can even hook up some of their own script, or some CLI tool to work directly from PowerToys Run, like it was a plugin of its own, without having to make an actual plugin for it.  \
+To be fair, for anything that is supposed to return more results and/or perform actions on results, an actual plugin should be written, but in my experience there are actually quite a few minimalistic tools that I'd prefer to have as a one-liner script rather than a full-blown plugin.
+
+- One interesting possibility is to have a less powerful REPL-like thing, which can many times be at least a surprisingly nice calculator at worst
+  - CMD is the most mainstream one, which in `launch` mode can effectively replace the command execution plugin, and in `return` mode can provide that REPL experience  \
+    `cmd|return|-1|<command>|||cmd|/c|<command>`
+  - PowerShell is the less known, but more powerful version of the above, although some more arguments could be a good idea for speed and no restrictions. (this one is implicitly a calculator as well)  \
+    `trn add ps|return|-1|<command>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|<command>`
+  - Node (although it will only give the output if explicitly logged, but those who know the `Math` class by heart can just wrap the command into a `console.log` and use it as a calculator as well)  \
+    `node|return|-1|<command>|||node|--eval|<command>`
+  - Python (Similar to Node, but the whitespace syntax makes it worse, so it's really only for masochists)  \
+    `python|return|-1|<command>|||python|-c|<command>`
+- The generic and ultimate solution for mini plugins: scripts  \
+  `my_script|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-File|C:\path\to\my\script.ps1 <input>`  \
+  Some 1-few liner ideas include the following (no example is provided for all of them)
+  - String encoder/decoders (base64, URL, hashes, etc.), where some examples can be
+    - Base64 decoder: `base64decode|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|[Text.Encoding]::Utf8.GetString([Convert]::FromBase64String('<input>'))`
+    - URL encoder: `url_encode|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|[URI]::EscapeDataString('<input>')`
+  - Prime checker
+  - Random number generator
+  - Converter
+  - etc.
+
 # Credits
 
 - Project template: https://github.com/hlaueriksson/Community.PowerToys.Run.Plugin.Templates
