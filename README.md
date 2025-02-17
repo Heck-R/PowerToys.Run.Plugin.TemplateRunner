@@ -37,7 +37,7 @@ Both typing and arrow keys and enter (or clicks) can navigate the menu, as it is
 
 This menu is for defining template commands to be executed later
 
-To define a command, use the following format (check the explanation and examples below)  \
+To define a command, use the following format (it may look scary at first, but check the [explanation](#explanation) and [examples](#examples) below, it's really easy once understood)  \
 (notation help: `<>` means it is to be replaced, `[]` means optionality, `...` means it continues the same way)  \
 `<alias><sep><mode>[<sep><timeoutMs>][<sep><parameter>[...]]<sep><sep>[<workingDir><sep>]<executable>[<sep><argument>[...]]`
 
