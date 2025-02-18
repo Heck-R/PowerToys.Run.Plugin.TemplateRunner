@@ -211,15 +211,21 @@ To be fair, for anything that is supposed to return more results and/or perform 
   - Python (Similar to Node, but the whitespace syntax makes it worse, so it's really only for masochists)  \
     `python|return|-1|<command>|||python|-c|<command>`
 - The generic and ultimate solution for mini plugins: scripts  \
-  `my_script|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-File|C:\path\to\my\script.ps1 <input>`  \
-  Some 1-few liner ideas include the following (no example is provided for all of them)
+  `my_script|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-File|C:\path\to\my\script.ps1|<input>`  \
+  Of course any script or CLI tool can be used, and as long as it's short enough, it can even be contained by the template  \
+  Note that inline scripts have a notable downside, which is the input interpolation. While scripts are going to get the raw process argument, inline scripts must deal with the syntax of the used language, where certain characters (or character combinations) have unintended semantic meaning in the context they get interpolated into  \
+  Some 1-few liner ideas include the following (not all of them are going to have examples)
   - String encoder/decoders (base64, URL, hashes, etc.), where some examples can be
     - Base64 decoder: `base64decode|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|[Text.Encoding]::Utf8.GetString([Convert]::FromBase64String('<input>'))`
-    - URL encoder: `url_encode|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|[URI]::EscapeDataString('<input>')`
+    - URL encoder: `url_encode|return|-1|<input>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|[URI]::EscapeDataString('<input>')`  \
+      This is actually an example for something that should be put inside a script instead, as interpolating inputs containing `'` characters will simply not work, and while it could technically worked around, it'd be way more simple to just put it into a script with 1 parameter
   - Prime checker
   - Random number generator
   - Converter
   - etc.
+
+As an ending note, I'd also add that technically it's enough to write one script that can solves all the interpolation issues, it just needs to create a file with the exact content of the first argument, and then pass the rest of the arguments onward.  \
+It could be argued that doing so is just pure madness, and different templates may as well just get their owns scripts, that way you also have nice scripts that can be used even outside of PowerToys, but as there are many people with different wants and needs, so the possibility should at least be acknowledged.
 
 # Credits
 
