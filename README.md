@@ -205,7 +205,7 @@ To be fair, for anything that is supposed to return more results and/or perform 
   - CMD is the most mainstream one, which in `launch` mode can effectively replace the command execution plugin, and in `return` mode can provide that REPL experience  \
     `cmd|return|-1|<command>|||cmd|/c|<command>`
   - PowerShell is the less known, but more powerful version of the above, although some more arguments could be a good idea for speed and no restrictions. (this one is implicitly a calculator as well)  \
-    `trn add ps|return|-1|<command>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|<command>`
+    `ps|return|-1|<command>|||powershell|-NoProfile|-ExecutionPolicy|Bypass|-Command|<command>`
   - Node (although it will only give the output if explicitly logged, but those who know the `Math` class by heart can just wrap the command into a `console.log` and use it as a calculator as well)  \
     `node|return|-1|<command>|||node|--eval|<command>`
   - Python (Similar to Node, but the whitespace syntax makes it worse, so it's really only for masochists)  \
