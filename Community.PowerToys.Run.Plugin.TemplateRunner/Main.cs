@@ -317,7 +317,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                 AcceleratorKey = Key.R,
                                 Action = actionContext => {
                                     Clipboard.SetDataObject(exitCode.ToString());
-                                    return false;
+                                    return true;
                                 }
                             },
                             new() {
@@ -329,7 +329,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                 AcceleratorKey = Key.O,
                                 Action = actionContext => {
                                     Clipboard.SetDataObject(output);
-                                    return false;
+                                    return true;
                                 }
                             },
                         },
@@ -349,7 +349,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                                 AcceleratorKey = Key.O,
                                 Action = actionContext => {
                                     Clipboard.SetDataObject(output);
-                                    return false;
+                                    return true;
                                 }
                             },
                         },
