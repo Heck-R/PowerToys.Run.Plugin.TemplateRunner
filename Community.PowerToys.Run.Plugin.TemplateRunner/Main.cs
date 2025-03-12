@@ -307,6 +307,10 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         IcoPath = lastQueryRunResult.ExitCode == 0 ? this.IconLoader.MAIN : this.IconLoader.WARNING,
                         Title = $"Process Result (Exit code: {lastQueryRunResult.ExitCode})",
                         SubTitle = lastQueryRunResult.Output,
+                        Action = actionContext => {
+                            Clipboard.SetDataObject(output);
+                            return true;
+                        },
                         ContextData = new ContextMenuResult[]{
                             new() {
                                 PluginName = this.Name,
@@ -339,6 +343,10 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         IcoPath = this.IconLoader.WARNING,
                         Title = $"The process did not finish in time => got terminated",
                         SubTitle = lastQueryRunResult.Output,
+                        Action = actionContext => {
+                            Clipboard.SetDataObject(output);
+                            return true;
+                        },
                         ContextData = new ContextMenuResult[]{
                             new() {
                                 PluginName = this.Name,
