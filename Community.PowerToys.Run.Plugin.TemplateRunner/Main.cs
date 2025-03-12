@@ -384,7 +384,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         },
                     };
                 }
-            ).ToList(), "");
+            ).ToList(), "", string.IsNullOrWhiteSpace(query.ActionKeyword) ? [this.Context.CurrentPluginMetadata.ActionKeyword, Menu.RUN] : null);
         }
 
         /// <summary>
