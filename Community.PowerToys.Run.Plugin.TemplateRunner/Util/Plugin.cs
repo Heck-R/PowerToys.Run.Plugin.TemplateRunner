@@ -18,8 +18,16 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
         /// <param name="path">Path to treat as the menu base</param>
         /// <param name="results">Results adjust</param>
         /// <param name="postfix">By default a space after the auto completed path to avoid having to smash space, but it can be changed</param>
+        /// <param name="resultPath">Path to replace the original path with. The default null means keeping the original path</param>
         /// <returns></returns>
-        public static List<Result> NavigationMenu(PluginInitContext context, Query query, string[] path, List<Result> results, string postfix = " ") {
+        public static List<Result> NavigationMenu(
+            PluginInitContext context,
+            Query query,
+            string[] path,
+            List<Result> results,
+            string postfix = " ",
+            List<string> resultPath = null
+        ) {
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(query);
             ArgumentNullException.ThrowIfNull(path);
@@ -44,8 +52,9 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
 
             return filteredResults.Select(result => {
                 // note: result itself must not be used in the action, because weird stuff happens in the background with it before the action runs
-                string basicQueryPath = $"{string.Join(" ", path)} {result.QueryTextDisplay}".Trim();
-                result.QueryTextDisplay = basicQueryPath;
+                string relativeQueryPath = $"{string.Join(" ", path)} {result.QueryTextDisplay}".Trim();
+                string actualQueryPath = $"{string.Join(" ", resultPath ?? path.ToList())} {result.QueryTextDisplay}".Trim();
+                result.QueryTextDisplay = relativeQueryPath;
 
                 var originalAction = result.Action;
                 result.Action = actionContext => {
@@ -53,7 +62,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                     originalAction?.Invoke(actionContext);
 
                     // Prepend actively entered action keyword, and trim joiner space if the prior was whitespace
-                    string fullQueryPath = string.Join(" ", [query.ActionKeyword, basicQueryPath]).TrimStart();
+                    string fullQueryPath = string.Join(" ", [query.ActionKeyword, actualQueryPath]).TrimStart();
                     context.API.ChangeQuery($"{fullQueryPath}{postfix}", true);
                     return false;
                 };
