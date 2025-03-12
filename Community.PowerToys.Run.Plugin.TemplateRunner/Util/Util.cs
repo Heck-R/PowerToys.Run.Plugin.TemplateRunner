@@ -422,7 +422,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
             }
 
             ExecutionInfo executionInfo = this.ResolveTemplate(template);
-            string output = "";
+            List<string> output = [];
 
             Process process = new();
             process.StartInfo.FileName = executionInfo.Executable;
@@ -450,7 +450,10 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
 
-                DataReceivedEventHandler outputHandler = new((sendingProcess, dataReceivedEventArgs) => { output += dataReceivedEventArgs.Data + "\n"; });
+                DataReceivedEventHandler outputHandler = new((sendingProcess, dataReceivedEventArgs) => {
+                    if (dataReceivedEventArgs.Data == null) return;
+                    output.Add(dataReceivedEventArgs.Data);
+                });
                 process.OutputDataReceived += outputHandler;
                 process.ErrorDataReceived += outputHandler;
             }
@@ -465,7 +468,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
                 return new RunResult() {
                     Finished = process.HasExited,
                     ExitCode = process.HasExited ? process.ExitCode : 0,
-                    Output = output
+                    Output = string.Join("\n", output)
                 };
             }
 
