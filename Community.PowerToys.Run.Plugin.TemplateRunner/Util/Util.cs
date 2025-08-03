@@ -56,6 +56,18 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
     }
 
     /// <summary>
+    /// Enum aliases for Process.StartInfo Verbs to avoid passing "weird" string around
+    /// </summary>
+    enum UserType {
+        /// <summary>No Verb is set</summary>
+        Default,
+        /// <summary>Verb = "RunAs"</summary>
+        Elevated,
+        /// <summary>Verb = "RunAsUser"</summary>
+        DifferentUser
+    }
+
+    /// <summary>
     /// An enum-like thingy for defining the execution type of a template
     /// </summary>
     public class TemplateMode {
@@ -416,7 +428,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
         /// </summary>
         /// <param name="template">Reference template</param>
         /// <returns>The process execution result on return mode templates, null otherwise</returns>
-        public RunResult Run(Template template) {
+        public RunResult Run(Template template, UserType userType = UserType.Default) {
             if (!this.IsWellDefined(template)) {
                 throw new Exception("The template run definition is not compatible with the used template");
             }
@@ -426,6 +438,11 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner.Util {
 
             Process process = new();
             process.StartInfo.FileName = executionInfo.Executable;
+            if (userType == UserType.Elevated) {
+                process.StartInfo.Verb = "RunAs";
+            } else if (userType == UserType.DifferentUser) {
+                process.StartInfo.Verb = "RunAsUser";
+            }
 
             if (template.Mode == TemplateMode.Uri) {
                 // Shell is needed for URIs to be recognized as executables

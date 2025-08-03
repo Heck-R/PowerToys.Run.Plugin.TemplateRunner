@@ -255,6 +255,19 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                 // Specific alias found, provide runner result
                 Template template = templateMap[templateRun.Alias];
 
+                Func<UserType, bool> triggerRun = userType => {
+                    this.AddItemToHistory(menuRawUserQuery);
+
+                    this.LastQueryRunResult = templateRun.Run(template, userType);
+
+                    if (this.LastQueryRunResult == null) {
+                        return true;
+                    }
+
+                    this.Context.API.ChangeQuery(query.RawUserQuery, true);
+                    return false;
+                };
+
                 List<Result> results = templateRun.IsWellDefined(template)
                 ? [
                     new Result {
@@ -263,18 +276,31 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
                         Title = $"Run {template.Alias}",
                         SubTitle = templateRun.TemplateMatchInfo(template),
                         Action = actionContext => {
-                            this.AddItemToHistory(menuRawUserQuery);
-
-                            this.LastQueryRunResult = templateRun.Run(template);
-
-                            if (this.LastQueryRunResult == null) {
-                                return true;
-                            }
-
-                            this.Context.API.ChangeQuery(query.RawUserQuery, true);
-                            return false;
+                            return triggerRun(UserType.Default);
                         },
                         ContextData = new ContextMenuResult[]{
+                            new ContextMenuResult {
+                                PluginName = this.Name,
+                                Title = "Run as Admin (Ctrl+R)",
+                                Glyph = "\U0001F589", // Pencil
+                                FontFamily = "Consolas, \"Courier New\", monospace",
+                                AcceleratorModifiers = ModifierKeys.Control,
+                                AcceleratorKey = Key.R,
+                                Action = actionContext => {
+                                    return triggerRun(UserType.Elevated);
+                                }
+                            },
+                            new ContextMenuResult {
+                                PluginName = this.Name,
+                                Title = "Run as User (Ctrl+U)",
+                                Glyph = "\U0001F589", // Pencil
+                                FontFamily = "Consolas, \"Courier New\", monospace",
+                                AcceleratorModifiers = ModifierKeys.Control,
+                                AcceleratorKey = Key.U,
+                                Action = actionContext => {
+                                    return triggerRun(UserType.DifferentUser);
+                                }
+                            },
                             getEditTemplateContextMenuResult(template.Alias),
                             getDeleteTemplateContextMenuResult(template.Alias),
                         },
@@ -388,7 +414,7 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
         }
 
         /// <summary>
-        /// Shows rn history
+        /// Shows run history
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
@@ -410,7 +436,6 @@ namespace Community.PowerToys.Run.Plugin.TemplateRunner {
 
             return PluginUtil.FixPositionAsScore(historyResults).ToList();
         }
-
 
         /// <summary>
         /// Adds the item to the beginning of the history, and removes any earlier occurrence
