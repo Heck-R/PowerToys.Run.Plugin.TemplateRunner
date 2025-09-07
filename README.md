@@ -2,7 +2,7 @@
 
 A [PowerToys](https://github.com/microsoft/PowerToys) plugin to manage and parameterize some simple scripts all inside PowerToys.
 
-While this plugin may seem like some weird unnecessary mix between the command search and the command execution plugins, its templating ability combined with simple result pipe-back to PowerToys allows it to become a great tool for those tiny quality of life features, that one would rather not make an entire plugin of, as doing that is considerably harder and an annoying than making a simple 1-2 line script
+While this plugin may seem like some weird unnecessary mix between the command search and the command execution plugins, its templating ability combined with simple result pipe-back to PowerToys allows it to become a great tool for those tiny personal quality of life features, that one would rather not make an entire plugin of, as doing that is considerably harder and more bothersome than making a simple 1-2 line script
 
 See some [examples](#examples) below
 
