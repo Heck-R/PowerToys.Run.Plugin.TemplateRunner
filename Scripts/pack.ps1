@@ -54,8 +54,7 @@ foreach ($folder in $folders) {
     $targetFramework = $csproj.Project.PropertyGroup.TargetFramework
     $platforms = "$($csproj.Project.PropertyGroup.Platforms)".Trim() -split ";"
 
-    foreach ($platform in $platforms)
-    {
+    foreach ($platform in $platforms) {
         Write-Output "Platform: $platform"
 
         # Build
