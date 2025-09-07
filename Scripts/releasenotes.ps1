@@ -74,28 +74,20 @@ foreach ($folder in $folders) {
 
     $files = Get-ChildItem -Path $folder -File -Include "$name-$version*.zip" -Recurse
 
-    Write-Line "## $name"
+    Write-Line "# Changelog"
     Write-Line ""
-    Write-Line "| Platform | Filename | Downloads"
+    Write-Line "TODO"
+    Write-Line ""
+    Write-Line "### Installer Hashes"
+    Write-Line ""
+    Write-Line "| Platform | Filename | SHA256 Hash"
     Write-Line "| --- | --- | ---"
     foreach ($file in $files) {
         $zip = $file.Name
         $platform = Get-Platform $zip
-        $url = "$website/releases/download/v$version/$zip"
-        $badge = "https://img.shields.io/github/downloads/$($website.Replace('https://github.com/', ''))/v$version/$zip"
-
-        Write-Line "| ``$platform`` | [$zip]($url) | [![$zip]($badge)]($url)"
-    }
-    Write-Line ""
-
-    Write-Line "### Installer Hashes"
-    Write-Line ""
-    Write-Line "| Filename | SHA256 Hash"
-    Write-Line "| --- | ---"
-    foreach ($file in $files) {
-        $zip = $file.Name
+        $url = "$website/releases/download/release/$version/$zip"
         $hash = Get-FileHash $file -Algorithm SHA256 | Select-Object -ExpandProperty Hash
 
-        Write-Line "| ``$zip`` | ``$hash``"
+        Write-Line "| ``$platform`` | [$zip]($url) | ``$hash``"
     }
 }
