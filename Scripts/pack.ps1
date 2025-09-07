@@ -59,7 +59,7 @@ foreach ($folder in $folders) {
         Write-Output "Platform: $platform"
 
         # Build
-        dotnet build $folder -c Release /p:TF_BUILD=true /p:Platform=$platform
+        dotnet build $folder -c Release /p:TF_BUILD=true /p:Platform=$platform /p:AssemblyVersion=$version
 
         if (!$?) {
             # Build FAILED.
