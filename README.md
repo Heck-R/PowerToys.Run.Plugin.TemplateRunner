@@ -25,7 +25,7 @@ Use [ptr](https://github.com/8LWXpg/ptr), which is a nice plugin manager CLI too
 ptr add TemplateRunner Heck-R/PowerToys.Run.Plugin.TemplateRunner
 ```
 
-# Features
+# Usage
 
 There are 3 major sections
 
